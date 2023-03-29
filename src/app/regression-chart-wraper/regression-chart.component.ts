@@ -11,6 +11,8 @@ export class RegressionChartWraperComponent implements OnInit, AfterViewInit {
   readonly chartId = 'regression-chart-' + this.instanceId;
   chartInstance = undefined;
 
+  type = 'mt';
+
   constructor() {}
 
   ngOnInit() {}

@@ -1,5 +1,6 @@
 <div class="regression-chart-wrapper">
-  <button>mt</button><button>CuSum</button>
+  <button (click)="onClickMt($event)">mt</button
+  ><button (click)="onClickCuSum($event)">CuSum</button>
 
   <div [id]="chartId" class="regression-chart"></div>
 </div>

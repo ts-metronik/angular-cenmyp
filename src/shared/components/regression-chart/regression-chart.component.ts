@@ -30,6 +30,13 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
   get data() {
     return this.data$.value;
   }
+  @Input() set type(type: ChartType) {
+    this.type$.next(lodash.cloneDeep(type));
+  }
+
+  get type() {
+    return this.type$.value;
+  }
 
   @Input() set disabledPoint(data: InputData) {
     this.disabledPoint$.next(data);
@@ -52,11 +59,14 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
   chartInstance = undefined;
 
   readonly data$ = new BehaviorSubject<InputData[]>([]);
+  readonly chartData$ = new BehaviorSubject<InputData[]>([]);
   readonly disabledPoint$ = new BehaviorSubject<InputData>(undefined);
   readonly disabledPoints$ = new BehaviorSubject<InputData[]>([]);
   readonly disabledPointsMap$ = new BehaviorSubject<Map<string, InputData>>(
     new Map()
   );
+  readonly type$ = new BehaviorSubject<ChartType>('mt');
+
   readonly destroyed$ = new Subject();
 
   constructor() {
@@ -134,6 +144,10 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
         this.createChart();
       },
     });
+
+    this.type$.pipe(takeUntil(this.destroyed$)).subscribe({
+      next: (type) => {},
+    });
   }
 
   ngOnInit() {}
@@ -150,8 +164,6 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
   }
 
   createChart() {
-    const data = this.data;
-
     const {
       result_values,
       max_x,
@@ -162,13 +174,23 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
       max_x_after_length,
       max_y_before_length,
       max_y_after_length,
-    } = findLineByLeastSquares(data);
+      cusum_values,
+    } = findLineByLeastSquares(this.data);
 
-    this.settings.xAxis = {
-      ...this.settings.xAxis,
-      max: max_x,
-      min: min_x,
-    };
+    const data = this.type === 'mt' ? this.data : cusum_values;
+
+    if (this.type === 'mt') {
+      this.settings.xAxis = {
+        ...this.settings.xAxis,
+        max: max_x,
+        min: min_x,
+      };
+    } else {
+      this.settings.xAxis = {
+        type: 'datetime',
+        opposite: true,
+      };
+    }
     this.settings.yAxis = {
       ...this.settings.yAxis,
       max: max_y,
@@ -183,10 +205,10 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
     });
 
     this.lineSettings.data = result_values;
-    this.settings.series = [this.lineSettings];
+    this.settings.series = this.type === 'mt' ? [this.lineSettings] : [];
     //this.settings.series[1].data = data;
 
-    this.data.forEach((d) => {
+    data.forEach((d) => {
       //let date = new Date(d.utcTimestamp);
       //let name = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
       this.settings.series.push({
@@ -297,7 +319,10 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
   }
 
   disablePoint(name: string) {
-    const point = this.data.find((d) => this.getName(d) === name);
+    const date = name.substr(5, 19);
+    const point = this.data.find(
+      (d) => moment(d.utcTimestamp).format(MOMENT_SORTABLE) === date
+    );
     point.disabled = true;
 
     this.disabledPoint$.next(point);
@@ -331,10 +356,7 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
     title: {
       text: 'Scatter plot with regression line',
     },
-    xAxis: {
-      min: -0.5,
-      max: 5.5,
-    },
+    xAxis: {},
     yAxis: {
       min: 0,
     },
@@ -374,6 +396,17 @@ export class RegressionChartComponent implements OnInit, AfterViewInit {
       },
     },
   };
+
+  onClickMt() {
+    this.type$.next('mt');
+    this.createChart();
+    console.debug('onClickMt');
+  }
+  onClickCuSum() {
+    this.type$.next('CuSum');
+    this.createChart();
+    console.debug('onClickCuSum');
+  }
 }
 
 function addSpaces(n, length: number, space: string = ' ') {
@@ -394,7 +427,12 @@ function getSpaces(n, length: number, space: string = ' ') {
 }
 
 function findLineByLeastSquares(
-  values: { x: number; y: number; disabled?: boolean }[]
+  values: {
+    x: number;
+    y: number;
+    disabled?: boolean;
+    utcTimestamp: string | Date;
+  }[]
 ) {
   var sum_x = 0;
   var sum_y = 0;
@@ -420,13 +458,19 @@ function findLineByLeastSquares(
   var values_length = values.length;
 
   /*
+   * We will make the x and y result line now
+   */
+  var result_values: { x: number; y: number; disabled?: boolean }[] = [];
+  var cusum_values: { x: Date; y: number; disabled?: boolean }[] = [];
+
+  /*
    * Nothing to do.
    */
   if (values_length === 0) {
     return {
       result_values,
-      m,
-      b,
+      m: undefined,
+      b: undefined,
       sum_x,
       sum_y,
       sum_xx,
@@ -442,6 +486,8 @@ function findLineByLeastSquares(
       max_x_after_length,
       max_y_before_length,
       max_y_after_length,
+
+      cusum_values,
     };
   }
 
@@ -507,21 +553,21 @@ function findLineByLeastSquares(
    */
   var m = (count * sum_xy - sum_x * sum_y) / (count * sum_xx - sum_x * sum_x);
   var b = sum_y / count - (m * sum_x) / count;
-
-  /*
-   * We will make the x and y result line now
-   */
-  var result_values: { x: number; y: number; disabled?: boolean }[] = [];
+  let cusumLastVal = 0;
 
   for (var v = 0; v < values_length; v++) {
     x = values[v].x;
     y = x * m + b;
-    let result = { x, y };
+    let result = { x, y, utcTimestamp: values[v].utcTimestamp };
+    cusumLastVal += values[v].y - y;
+    let cusum = { x: new Date(values[v].utcTimestamp), y: cusumLastVal };
     if (values[v].disabled) {
       (result as any).disabled = true;
+      (cusum as any).disabled = true;
     }
 
-    result_values.push({ x, y });
+    result_values.push(result);
+    cusum_values.push(cusum);
   }
 
   return {
@@ -543,6 +589,8 @@ function findLineByLeastSquares(
     max_x_after_length,
     max_y_before_length,
     max_y_after_length,
+
+    cusum_values,
   };
 }
 
@@ -624,6 +672,7 @@ export interface InputData {
   utcTimestamp: string | Date;
   disabled?: boolean;
 }
+export type ChartType = 'mt' | 'CuSum';
 
 export const dataExample = [
   {
