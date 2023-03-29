@@ -12,9 +12,10 @@ import { EventEmitter, Input, Output } from '@angular/core';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import * as Highcharts from 'highcharts/highcharts';
 import * as lodash from 'lodash';
-import * as moment from 'moment';
-import { filterUndefined } from 'src/shared/lib/rxjs.utils';
-import { MOMENT_SORTABLE } from 'src/shared/constants';
+//import * as moment from 'moment';
+import moment from 'moment';
+import { filterUndefined } from '../../lib/rxjs.utils';
+import { MOMENT_SORTABLE } from '../../constants';
 
 @Component({
   selector: 'app-regression-chart',

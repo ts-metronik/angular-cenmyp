@@ -2,11 +2,11 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import * as Highcharts from 'highcharts/highcharts';
 
 @Component({
-  selector: 'app-regression-chart',
+  selector: 'app-regression-chart-wraper',
   templateUrl: './regression-chart.component.html',
   styleUrls: ['./regression-chart.component.scss'],
 })
-export class RegressionChartComponent implements OnInit, AfterViewInit {
+export class RegressionChartWraperComponent implements OnInit, AfterViewInit {
   readonly instanceId = Math.round(Math.random() * (1000000 + 1));
   readonly chartId = 'regression-chart-' + this.instanceId;
   chartInstance = undefined;
