@@ -1,0 +1,17 @@
+.upDownIndicator {
+  height: 250px;
+  width: 250px;
+
+  polygon {
+    stroke-width: 5;
+    stroke-linejoin: round;
+  }
+  .up {
+    fill: green;
+    stroke: green;
+  }
+  .down {
+    fill: red;
+    stroke: red;
+  }
+}

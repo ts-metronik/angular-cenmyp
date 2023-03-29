@@ -1,0 +1,9 @@
+<div class="line-gauge">
+  <div
+    class="progress-bar"
+    [attr.procent]="procent"
+    [ngStyle]="{ width: procent + '%' }"
+  ></div>
+  <span class="value">{{ value }}</span
+  ><span class="unit">{{ unit }}</span>
+</div>

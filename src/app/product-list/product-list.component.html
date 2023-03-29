@@ -1,0 +1,129 @@
+<div class="main-div">
+  <div class="browser-window">
+    <div class="main-box">
+      <div class="mini-header" [ngStyle]="{ opacity: loaded ? '1' : '0.2' }">
+        <div class="mini-logo">
+          <img [src]="logoImage" *ngIf="logoImage" />
+        </div>
+        <div style="float: right;">
+          <span
+            style="background: grey; height: 1em; width: 1em; float: right;
+          border-radius: 50%; margin: 0.5em 0.4em;"
+          ></span>
+          <span
+            style="background: #cfcfcf; height: .6em; width: 5em; float: right;
+          border-radius: 1em; margin: 0.7em 0;"
+          ></span>
+        </div>
+      </div>
+      <div class="mini-body" [ngStyle]="{ opacity: loaded ? '1' : '0.2' }">
+        <div
+          class="mini-sidebar"
+          [style.background]="contentObj.sidebarBackgroundColor"
+        >
+          <div
+            *ngFor="let i of [1, 2, 3]"
+            class="mini-sidebar-item"
+            [class.active]="i === 2"
+            [style.background]="
+              i === 2
+                ? contentObj.sidebarSelectionBackgroundColor
+                : contentObj.sidebarBackgroundColor
+            "
+          >
+            <span
+              [style.background]="
+                i === 2
+                  ? contentObj.secondaryColor
+                  : contentObj.sidebarItemsColor
+              "
+            ></span>
+            <div
+              [style.background]="
+                i === 2
+                  ? contentObj.secondaryColor
+                  : contentObj.sidebarItemsColor
+              "
+            ></div>
+            <div
+              *ngIf="(i + 1) % 2"
+              [style.background]="contentObj.sidebarItemsColor"
+            ></div>
+          </div>
+
+          <div class="bottom-logo">
+            <span [style.color]="contentObj.logoColorPrimary">ME</span>
+            <span [style.color]="contentObj.logoColorSecondary">TRONIK</span>
+          </div>
+        </div>
+        <div
+          class="mini-sidebar-2"
+          [style.background]="contentObj.centralPanelWhiteBoard"
+        >
+          <div>
+            <h2 [style.color]="contentObj.textColorGeneral">Title</h2>
+            <div class="mini-row-item" *ngFor="let i of [1, 2]">
+              <span [style.color]="contentObj.textColorGeneral"
+                >Lorem ipsum</span
+              >
+            </div>
+          </div>
+          <div class="button-row">
+            <div class="mini-button" [style.background]="'#F2F2F2'">
+              <span [style.color]="contentObj.textColorGeneral">x</span>
+            </div>
+            <div
+              class="mini-button"
+              [style.background]="contentObj.secondaryColor"
+            >
+              <span [style.color]="contentObj.textColorSecondary">ok</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="mini-main"
+          [style.background]="contentObj.centralPanelBackgroundColor"
+        >
+          <div
+            class="mini-title"
+            [style.background]="contentObj.secondaryColor"
+          >
+            <!--<span [style.color]="contentObj.secondaryTextColor">Title</span>-->
+          </div>
+          <div
+            class="mini-button"
+            style="position: absolute; right: 0.5em; top: 0.5em"
+            [style.background]="contentObj.secondaryColor"
+            [style.color]="contentObj.textColorSecondary"
+          >
+            <span [style.color]="contentObj.textColorSecondary">Button</span>
+          </div>
+          <br />
+          <div class="mini-row-item" *ngFor="let i of [1, 2, 3, 4]">
+            <span [style.color]="contentObj.textColorGeneral">Lorem ipsum</span>
+          </div>
+          <div
+            class="mini-button"
+            [style.background]="contentObj.secondaryColor"
+            [style.color]="contentObj.textColorSecondary"
+          >
+            <span [style.color]="contentObj.textColorSecondary">ok</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="skeleton-modal-overlay">
+        <div class="skeleton-modal">
+          <div
+            class="skeleton-modal-title"
+            [style.background]="
+              'linear-gradient(87.68deg, ' +
+              contentObj.titleBackgroundSecondaryColor +
+              ' -2.85%, grey 99.77%);'
+            "
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
